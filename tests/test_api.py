@@ -104,7 +104,7 @@ def test_punch_in_and_punch_out():
         assert out_response.status_code == 200, out_response.text
 
         result = out_response.json()
-        assert result["punch_out"] == (punch_out_ms // 1000) * 1000
+        assert result["punch_out"] == punch_out_ms
         assert result["work_hours"] >= 0
 
 
@@ -150,8 +150,8 @@ def test_attendance_correction_records_history():
         assert correction_response.status_code == 200, correction_response.text
 
         corrected = correction_response.json()
-        expected_original = (punch_out_ms // 1000) * 1000
-        expected_corrected = (corrected_punch_out // 1000) * 1000
+        expected_original = punch_out_ms
+        expected_corrected = corrected_punch_out
 
         assert corrected["punch_out"] == expected_corrected
         assert len(corrected["history"]) >= 1

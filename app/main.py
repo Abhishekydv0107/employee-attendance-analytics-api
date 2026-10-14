@@ -33,19 +33,22 @@ app = FastAPI(title="Employee Attendance & Analytics API", version="2.0.0")
 # ---------------------------------------------------------
 
 def now_utc():
-    return datetime.now(UTC).replace(microsecond=0)
+    return datetime.now(UTC)
 
 
 def truncate_seconds(dt):
     if dt.tzinfo is None:
         dt = dt.replace(tzinfo=UTC)
-    return dt.astimezone(UTC).replace(microsecond=0)
+    dt = dt.astimezone(UTC)
+    return dt.replace(microsecond=(dt.microsecond // 1000) * 1000)
 
 
 def epoch_ms(dt):
     if dt is None:
         return None
-    return int(truncate_seconds(dt).timestamp() * 1000)
+    dt = as_utc(dt)
+    delta = dt - datetime(1970, 1, 1, tzinfo=UTC)
+    return delta.days * 86400000 + delta.seconds * 1000 + delta.microseconds // 1000
 
 
 def from_epoch(value):
@@ -55,7 +58,7 @@ def from_epoch(value):
         raise ValueError("Timestamp must be integer epoch milliseconds")
     if value < 100000000000 or value > 4102444800000:
         raise ValueError("Timestamp is outside the allowed epoch-ms range")
-    return datetime.fromtimestamp(value / 1000, UTC).replace(microsecond=0)
+    return datetime(1970, 1, 1, tzinfo=UTC) + timedelta(milliseconds=value)
 
 
 def as_utc(dt):
